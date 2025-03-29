@@ -8,25 +8,10 @@ class Simulation:
     """
     TODO: document
     """
-    def __init__(self, asset: Asset, threats: list[Threat], dt: int = 10 ):
+    def __init__(self, asset: Asset, threats: list[Threat], dt: int = 10):
         self.dt = dt
         self.asset = asset
         self.threats = threats
-    
-    def num_of_drones(self, drone_type: str) -> int:
-        """
-        Samples the number of a specific drone type in a single attack on the asset
-        :drone_type (str): name of the drone type
-        :return (int): the sampled number of drones
-        """
-        try:
-            dist = self.threats[drone_type]["dist"]
-            range = self.threats[drone_type]["range"]
-            
-            return np.random.choice(range, p=dist)
-        
-        except Exception as ex:
-            raise (f"Failed to sample number of drones - {str(ex)}")
         
     def simulate_one_attack(self) -> tuple[int, bool]:
         """
@@ -57,9 +42,16 @@ class Simulation:
             
                 # advance threats
                 threat.update_position(self.asset, self.dt)
-        
-        return self.asset.value
-            
+                        
+        return self.asset.total_value
+    
+    def reset_simulation(self):
+        self.asset.is_alive = True
+        for threat in self.threats:
+            threat.is_alive = True
+            threat.is_spotted = False
+            threat.position = threat.randomize_initial_position(self.asset)
+            threat.distance_to_asset = threat.calculate_distance_to_asset(self.asset)
     
     def simulate_n_attacks(self, n: int = 1_000_000) -> tuple[float, float]:
         """
@@ -75,6 +67,7 @@ class Simulation:
             
             if cost > 0:
                 number_assets_destroyed += 1
-        
+            
+            self.reset_simulation()
+                        
         return np.sum(costs) / n, np.std(costs), number_assets_destroyed / n 
-    
