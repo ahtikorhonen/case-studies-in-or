@@ -20,6 +20,11 @@ class Observer:
             p = 0
         else:
             p = a * x ** 2 + b * x + c
+            
+            if p > 1:
+                p = 0.9
+            elif p < 0:
+                p = 0
         
         return p
         

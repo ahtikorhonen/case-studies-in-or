@@ -21,6 +21,12 @@ class Effector:
             p = 0
         else:
             p = a * x ** 2 + b * x + c
+            
+            # this should not be used
+            if p > 1:
+                p = 0.9
+            elif p < 0:
+                p = 0
         
         return p
         

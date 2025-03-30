@@ -28,19 +28,15 @@ class Simulation:
                 if not threat.is_alive:
                     continue
                 
-                # try to spot the threats
                 for observer in self.asset.observers:
                     observer.spot(threat)
                     
-                # if spotted - try to destroy the threats
                 for effector in self.asset.effectors:
                     effector.effect(threat)
                     
-                # try to destroy the asset
                 if threat.attack_asset():
                     self.asset.is_alive = False
             
-                # advance threats
                 threat.update_position(self.asset, self.dt)
                         
         return self.asset.total_value
