@@ -2,6 +2,8 @@ import itertools
 
 import numpy as np
 
+from threat import Threat, ThreatE
+
 
 def get_combinations(data: dict):
     """
@@ -13,6 +15,18 @@ def get_combinations(data: dict):
     observers = data.get("observers", [])
     
     return list(itertools.product(observers, effectors))
+
+def sample_poisson_threats(asset, drone_specs: dict, lambdas: dict):
+    threats = []
+    
+    for drone_type, lam in lambdas.items():
+        count = np.random.poisson(lam)
+        spec = next(filter(lambda d: d["type"] == drone_type, drone_specs))
+        
+        for _ in range(count):
+            threats.append(Threat(ThreatE[drone_type], spec["p"], spec["speed"], asset))
+            
+    return threats
 
 def num_of_drones(drone_type: str, threats) -> int:
     """

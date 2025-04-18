@@ -91,7 +91,6 @@ class Threat:
         if self.distance_to_asset <= 0 and self.is_alive:
             self.is_alive = False
             attack_result = bool(np.random.binomial(1, self.p))
-            #print(f"type: {self.type}, result: {attack_result}")
             
             return attack_result
         

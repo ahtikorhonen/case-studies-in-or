@@ -15,7 +15,7 @@ class Observer:
         Returns the probability of succesfully spotting the threat
         as a function of distance to the asset/observer
         """
-        a, b, c, xmin, xmax = self.parameters[threat.type].values()
+        a, b, c, xmin, xmax = self.parameters[threat.type.value].values()
         x = threat.distance_to_asset / 1_000
         
         if x <= xmin:

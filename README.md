@@ -3,7 +3,8 @@ Simulation of cost effective defense against unmanned aerial systems
 
 TODO:
 - night mode [x]
-- droonejen lukumäärä jakaumasta
+- droonejen lukumäärä jakaumasta [x]
 - näkyvyys kerroin [x]
-- vaihda uudet parametrit ja testaa
-- yhden dronen voi tuhota yhdellä ajan hetkellä
+- vaihda uudet parametrit ja testaa [x]
+- yhden dronen voi tuhota yhdellä ajan hetkellä [x]
+- useampi assetti

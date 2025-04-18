@@ -16,7 +16,7 @@ class Effector:
         Returns the probability of succesfully effecting on the threat
         as a function of distance to the asset/effector
         """
-        a, b, c, xmin, xmax = self.parameters[threat.type].values()
+        a, b, c, xmin, xmax = self.parameters[threat.type.value].values()
         x = threat.distance_to_asset / 1_000
         
         if x <= xmin:
@@ -38,14 +38,18 @@ class Effector:
         """
         Tries to destroy the threat by sampling from the binomial attribute, which represents
         the probability of the threat getting destroyed as a function of distance to the asset.
-        :return (None): returns None, in case the threat is destroyed the is_alive attribute of the threat is
-                        changed to False
+        :return (bool): returns True, in case the threat is destroyed and the is_alive attribute of the threat is
+                        changed to False. Returns False otherwise
         """
         # cant effect during night time
         if is_night_mode and not self.night_mode:
-            return
+            return False
         
         if threat.is_spotted:
             p = self.get_p(threat)
             if bool(np.random.binomial(1, p)):
                 threat.is_alive = False
+                
+                return True
+            
+        return False
