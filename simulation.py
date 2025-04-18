@@ -8,10 +8,11 @@ class Simulation:
     """
     TODO: document
     """
-    def __init__(self, asset: Asset, threats: list[Threat], dt: int = 10):
+    def __init__(self, asset: Asset, threats: list[Threat], dt: int = 10, night_mode = False):
         self.dt = dt
         self.asset = asset
         self.threats = threats
+        self.night_mode = night_mode
         
     def simulate_one_attack(self) -> tuple[int, bool]:
         """
@@ -20,7 +21,7 @@ class Simulation:
         while self.asset.is_alive:
             
             # if all threats are destroyed, return zero 
-            if all([not t.is_alive for t in self.threats]):
+            if all([not threat.is_alive for threat in self.threats]):
                 return 0
             
             for threat in self.threats:
@@ -29,10 +30,10 @@ class Simulation:
                     continue
                 
                 for observer in self.asset.observers:
-                    observer.spot(threat)
+                    observer.spot(threat, self.night_mode)
                     
                 for effector in self.asset.effectors:
-                    effector.effect(threat)
+                    effector.effect(threat, self.night_mode)
                     
                 if threat.attack_asset():
                     self.asset.is_alive = False

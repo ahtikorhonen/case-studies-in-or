@@ -6,10 +6,10 @@ class Asset:
     """
     TODO: document
     """
-    def __init__(self, value: int, effectors: list, observers: list):
+    def __init__(self, value: int, effectors: list, observers: list, visibility_coeff: float):
         self.value = value
-        self.effectors = [Effector(**effector) for effector in effectors]
-        self.observers = [Observer(**observer) for observer in observers]
+        self.effectors = [Effector(visibility_coeff, **effector) for effector in effectors]
+        self.observers = [Observer(visibility_coeff, **observer) for observer in observers]
         self.position = (0,0)
         self.is_alive = True
     
