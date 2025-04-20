@@ -1,16 +1,17 @@
+from collections import defaultdict
+
 import numpy as np
 
-from asset import Asset
-from sim_utils import sample_poisson_threats
+from sim_utils import euclidean_distance
 
 
 class Simulation:
     """
     TODO: document
     """
-    def __init__(self, asset: Asset, threats: list, generate_threats, dt: int = 10, night_mode = False):
+    def __init__(self, assets: list, threats: list, generate_threats, dt: int = 10, night_mode = False):
         self.dt = dt
-        self.asset = asset
+        self.assets = assets
         self.threats = threats
         self.night_mode = night_mode
         self.generate_threats = generate_threats
@@ -19,42 +20,45 @@ class Simulation:
         """
         :return (int, bool): the value of the asset if the asset was destroyed and zero otherwise
         """
-        while self.asset.is_alive:
+        asset_value_destroyed = 0
+        while all([asset.is_alive for asset in self.assets]):
             
-            # if all threats are destroyed, return zero 
+            # if all threats are destroyed, return value of destroyed assets 
             if all([not threat.is_alive for threat in self.threats]):
-                return 0
+                return asset_value_destroyed
             
-            for threat in self.threats:
-                
-                if not threat.is_alive:
-                    continue
-                
-                for observer in self.asset.observers:
+            asset_value_destroyed += self.attack_loop()
+                        
+        return asset_value_destroyed
+    
+    def attack_loop(self) -> float:
+        asset_value_destroyed = 0
+        alive_assets = [asset for asset in self.assets if asset.is_alive]
+        alive_threats = [threat for threat in self.threats if threat.is_alive]
+        mapping = self.group_by_closest(alive_assets, alive_threats)
+        
+        for asset, threats in mapping.items():
+            for threat in threats:
+                for observer in asset.observers:
                     observer.spot(threat, self.night_mode)
                     
-                for effector in self.asset.effectors:
+                for effector in asset.effectors:
                     if effector.effect(threat, self.night_mode):
                         break
                     
                 if threat.attack_asset():
-                    self.asset.is_alive = False
+                    asset.is_alive = False
+                    asset_value_destroyed += asset.total_value
             
-                threat.update_position(self.asset, self.dt)
-                        
-        return self.asset.total_value
-    
-    def reset_simulation(self):
-        self.asset.is_alive = True
+                threat.update_position(asset, self.dt)
         
-        if self.generate_threats:
-            self.threats = self.generate_threats()
-            
-        for threat in self.threats:
-            threat.is_alive = True
-            threat.is_spotted = False
-            threat.position = threat.randomize_initial_position(self.asset)
-            threat.distance_to_asset = threat.calculate_distance_to_asset(self.asset)
+        return asset_value_destroyed
+
+    def reset_simulation(self):
+        for asset in self.assets:
+            asset.is_alive = True
+        
+        self.threats = self.generate_threats()
     
     def simulate_n_attacks(self, n: int = 1_000_000) -> tuple[float, float]:
         """
@@ -74,3 +78,27 @@ class Simulation:
             self.reset_simulation()
                         
         return np.sum(costs) / n, np.std(costs), number_assets_destroyed / n 
+
+    def group_by_closest(
+        self,
+        assets: list,
+        threats: list
+    ) -> dict:
+        """
+        For each asset in assets, build a dict containing:
+        - the asset itself as key
+        - all threats for which the asset is the nearest neighbor among all assets.
+        
+        """
+        mapping = defaultdict(list)
+        
+        # For each threat, find its nearest asset and assign it:
+        for threat in threats:
+            closest_asset = min(
+                assets,
+                key=lambda asset: euclidean_distance(asset.position, threat.position)
+            )
+            mapping[closest_asset].append(threat)
+            threat.closest_asset = closest_asset
+        
+        return mapping

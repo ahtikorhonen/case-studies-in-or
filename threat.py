@@ -3,6 +3,7 @@ from enum import Enum
 import numpy as np
 
 from asset import Asset
+from sim_utils import euclidean_distance
 
 
 class ThreatE(Enum):
@@ -21,27 +22,37 @@ class Threat:
     :is_alive (bool): indicates whether the drone is functional
     :is_spotted (bool): indicates wheter the drone has been spotted by the asset
     """
-    def __init__(self, type: ThreatE, p: float, speed: int, asset: Asset):
+    def __init__(self, type: ThreatE, p: float, speed: int, assets: Asset):
         self.type = type
         self.p = p
         self.speed = speed
-        self.position = self.randomize_initial_position(asset)
-        self.distance_to_asset = self.calculate_distance_to_asset(asset)
+        self.position = self.randomize_initial_position()
+        self.closest_asset = self.get_closest_asset(assets)
+        self.distance_to_asset = euclidean_distance(self.closest_asset.position, self.position)
         self.is_alive = True
         self.is_spotted = False
         
-    def randomize_initial_position(self, asset, min_distance = 3_000, max_distance = 10_000) -> tuple[int, int]:
+    def randomize_initial_position(self, min_distance = 3_000, max_distance = 15_000) -> tuple[int, int]:
         """
         Randomly generates x- and y-coordinates such that the initial position is at least
-        5 km from the asset and no more than 20 km
+        5 km from the closest asset and no more than 15 km. Assume that all assets are within close
+        proximity to the point (0,0).
+        :return (tuple[int,int]): initial position of the threat
         """
         theta = np.random.uniform(0, 2 * np.pi)
         r = np.sqrt(np.random.uniform(min_distance**2, max_distance**2))
-        x_1, y_1 = asset.position
-        x = x_1 + r * np.cos(theta)
-        y = y_1 + r * np.sin(theta)
+        x = r * np.cos(theta)
+        y = r * np.sin(theta)
         
         return x, y
+    
+    def get_closest_asset(self, assets):
+        closest_asset = min(
+                assets,
+                key=lambda asset: euclidean_distance(asset.position, self.position)
+            )
+        
+        return closest_asset
     
     def update_position(self, asset: Asset, dt: int) -> None:
         """
@@ -69,18 +80,7 @@ class Threat:
         new_y = y_2 + unit_dy * traveled_distance
         
         self.position = (new_x, new_y)
-        self.distance_to_asset = self.calculate_distance_to_asset(asset)
-        #print(f"Threat: {self.type}, new pos: {new_x, new_y}, new dist: {self.distance_to_asset}")
-    
-    def calculate_distance_to_asset(self, asset: Asset) -> None:
-        """
-        TODO: document
-        """
-        x_1, y_1 = asset.position
-        x_2, y_2 = self.position
-        distance_to_asset = np.sqrt((x_1 - x_2)**2 + (y_1 - y_2)**2)
-        
-        return distance_to_asset
+        self.distance_to_asset = euclidean_distance(asset.position, self.position)
         
     def attack_asset(self) -> bool:
         """

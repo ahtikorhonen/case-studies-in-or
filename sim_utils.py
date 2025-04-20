@@ -1,4 +1,5 @@
 import itertools
+import math
 
 import numpy as np
 
@@ -16,7 +17,7 @@ def get_combinations(data: dict):
     
     return list(itertools.product(observers, effectors))
 
-def sample_poisson_threats(asset, drone_specs: dict, lambdas: dict):
+def sample_poisson_threats(assets, drone_specs: dict, lambdas: dict):
     threats = []
     
     for drone_type, lam in lambdas.items():
@@ -24,21 +25,15 @@ def sample_poisson_threats(asset, drone_specs: dict, lambdas: dict):
         spec = next(filter(lambda d: d["type"] == drone_type, drone_specs))
         
         for _ in range(count):
-            threats.append(Threat(ThreatE[drone_type], spec["p"], spec["speed"], asset))
+            threats.append(Threat(ThreatE[drone_type], spec["p"], spec["speed"], assets))
             
     return threats
 
-def num_of_drones(drone_type: str, threats) -> int:
+def euclidean_distance(p1: tuple[float, float], p2: tuple[float, float]) -> float:
     """
-    Samples the number of a specific drone type in a single attack on the asset
-    :drone_type (str): name of the drone type
-    :return (int): the sampled number of drones
+    :return (float): the Euclidean distance between two (x, y) positions
     """
-    try:
-        dist = threats[drone_type]["dist"]
-        range = threats[drone_type]["range"]
-        
-        return np.random.choice(range, p=dist)
-
-    except Exception as ex:
-        raise (f"Failed to sample number of drones - {str(ex)}")
+    dx = p1[0] - p2[0]
+    dy = p1[1] - p2[1]
+    
+    return math.hypot(dx, dy)
