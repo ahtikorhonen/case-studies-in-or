@@ -1,9 +1,9 @@
 from enum import Enum
+from math import hypot
 
 import numpy as np
 
-from asset import Asset
-from sim_utils import euclidean_distance
+from simulation.asset import Asset
 
 
 class ThreatE(Enum):
@@ -28,11 +28,11 @@ class Threat:
         self.speed = speed
         self.position = self.randomize_initial_position()
         self.closest_asset = self.get_closest_asset(assets)
-        self.distance_to_asset = euclidean_distance(self.closest_asset.position, self.position)
+        self.distance_to_asset = self.euclidean_distance(self.closest_asset.position, self.position)
         self.is_alive = True
         self.is_spotted = False
         
-    def randomize_initial_position(self, min_distance = 3_000, max_distance = 15_000) -> tuple[int, int]:
+    def randomize_initial_position(self, min_distance = 3_000, max_distance = 10_000) -> tuple[int, int]:
         """
         Randomly generates x- and y-coordinates such that the initial position is at least
         5 km from the closest asset and no more than 15 km. Assume that all assets are within close
@@ -49,7 +49,7 @@ class Threat:
     def get_closest_asset(self, assets):
         closest_asset = min(
                 assets,
-                key=lambda asset: euclidean_distance(asset.position, self.position)
+                key=lambda asset: self.euclidean_distance(asset.position, self.position)
             )
         
         return closest_asset
@@ -80,7 +80,7 @@ class Threat:
         new_y = y_2 + unit_dy * traveled_distance
         
         self.position = (new_x, new_y)
-        self.distance_to_asset = euclidean_distance(asset.position, self.position)
+        self.distance_to_asset = self.euclidean_distance(asset.position, self.position)
         
     def attack_asset(self) -> bool:
         """
@@ -95,4 +95,13 @@ class Threat:
             return attack_result
         
         return False
+    
+    def euclidean_distance(self, p1: tuple[float, float], p2: tuple[float, float]) -> float:
+        """
+        :return (float): the Euclidean distance between two (x, y) positions
+        """
+        dx = p1[0] - p2[0]
+        dy = p1[1] - p2[1]
+        
+        return hypot(dx, dy)
     

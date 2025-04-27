@@ -1,5 +1,5 @@
-from effector import Effector
-from observer import Observer
+from simulation.effector import Effector
+from simulation.observer import Observer
 
 
 class Asset:

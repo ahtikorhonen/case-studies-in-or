@@ -1,9 +1,8 @@
 import itertools
-import math
 
 import numpy as np
 
-from threat import Threat, ThreatE
+from simulation.threat import Threat, ThreatE
 
 
 def get_combinations(data: dict):
@@ -28,12 +27,3 @@ def sample_poisson_threats(assets, drone_specs: dict, lambdas: dict):
             threats.append(Threat(ThreatE[drone_type], spec["p"], spec["speed"], assets))
             
     return threats
-
-def euclidean_distance(p1: tuple[float, float], p2: tuple[float, float]) -> float:
-    """
-    :return (float): the Euclidean distance between two (x, y) positions
-    """
-    dx = p1[0] - p2[0]
-    dy = p1[1] - p2[1]
-    
-    return math.hypot(dx, dy)
