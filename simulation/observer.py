@@ -3,7 +3,7 @@ import numpy as np
 class Observer:
     def __init__(self, visibility_coeff: float, type: str, value: int, parameters: dict, night_mode: bool):
         self.type = type
-        self.value = value
+        self.value = value * 10**3
         self.parameters = parameters
         self.night_mode = night_mode
         

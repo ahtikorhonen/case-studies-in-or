@@ -13,9 +13,16 @@ class Asset:
         self.position = position
         self.is_alive = True
     
-    @property    
+    @property
     def total_value(self):
         effectors_value = sum([eff.value for eff in self.effectors])
         observers_value = sum([obs.value for obs in self.observers])
         
         return effectors_value + observers_value + self.value
+    
+    @property    
+    def defense_value(self):
+        effectors_value = sum([eff.value for eff in self.effectors])
+        observers_value = sum([obs.value for obs in self.observers])
+        
+        return effectors_value + observers_value

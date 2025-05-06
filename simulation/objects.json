@@ -40,6 +40,24 @@
             "night_mode": 1
         },
         {
+            "type": "ITKK",
+            "value": 5,
+            "parameters": {
+                "MC": {"a": 2.96, "b": -3.41, "c": 1.06, "xmin": 0.05, "xmax": 0.5},
+                "FW": {"a": 2.96, "b": -3.41, "c": 1.06, "xmin": 0.05, "xmax": 0.5}
+            },
+            "night_mode": 0
+        },
+        {
+            "type": "ITKK_IR",
+            "value": 20,
+            "parameters": {
+                "MC": {"a": 2.67, "b": -3.6, "c": 1.23, "xmin": 0.1, "xmax": 0.5},
+                "FW": {"a": 2.67, "b": -3.6, "c": 1.23, "xmin": 0.1, "xmax": 0.5}
+            },
+            "night_mode": 0
+        },
+        {
             "type": "remote weapon station",
             "value": 200,
             "parameters": {
