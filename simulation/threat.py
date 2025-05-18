@@ -22,15 +22,18 @@ class Threat:
     :is_alive (bool): indicates whether the drone is functional
     :is_spotted (bool): indicates wheter the drone has been spotted by the asset
     """
-    def __init__(self, type: ThreatE, p: float, speed: int, assets: Asset):
+    def __init__(self, type: ThreatE, p: float, speed: int):
         self.type = type
         self.p = p
         self.speed = speed
         self.position = self.randomize_initial_position()
-        self.closest_asset = self.get_closest_asset(assets)
-        self.distance_to_asset = self.euclidean_distance(self.closest_asset.position, self.position)
+        self.closest_asset = None
         self.is_alive = True
         self.is_spotted = False
+        
+    @property
+    def distance_to_asset(self):
+        return self.euclidean_distance(self.closest_asset.position, self.position)
         
     def randomize_initial_position(self, min_distance = 3_000, max_distance = 10_000) -> tuple[int, int]:
         """
@@ -46,15 +49,7 @@ class Threat:
         
         return x, y
     
-    def get_closest_asset(self, assets):
-        closest_asset = min(
-                assets,
-                key=lambda asset: self.euclidean_distance(asset.position, self.position)
-            )
-        
-        return closest_asset
-    
-    def update_position(self, asset: Asset, dt: int) -> None:
+    def update_position(self, dt: int) -> None:
         """
         Advances the threats position in the direction of the closest asset
         :asset (Asset): the closest asset to the threat
@@ -67,9 +62,9 @@ class Threat:
         distance = self.distance_to_asset
         
         if traveled_distance >= self.distance_to_asset:
-            self.position = asset.position
+            self.position = self.closest_asset.position
         
-        x_1, y_1 = asset.position
+        x_1, y_1 = self.closest_asset.position
         x_2, y_2 = self.position
         dx = x_1 - x_2
         dy = y_1 - y_2
@@ -80,7 +75,8 @@ class Threat:
         new_y = y_2 + unit_dy * traveled_distance
         
         self.position = (new_x, new_y)
-        self.distance_to_asset = self.euclidean_distance(asset.position, self.position)
+        
+        #print(f"updated distance to asset: {self.distance_to_asset}")
         
     def attack_asset(self) -> bool:
         """
@@ -88,9 +84,10 @@ class Threat:
         or a failed attack if result is False 
         :return (bool): True if asset was destroyed or False if attack was failed (drone miss/asset not destroyed)
         """
-        if self.distance_to_asset <= 0 and self.is_alive:
+        if self.distance_to_asset <= 0:
             self.is_alive = False
             attack_result = bool(np.random.binomial(1, self.p))
+            print(f"threat type: {self.type}, attack result: {attack_result}")
             
             return attack_result
         

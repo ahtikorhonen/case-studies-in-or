@@ -16,7 +16,7 @@ def get_combinations(data: dict):
     
     return list(itertools.product(observers, effectors))
 
-def sample_poisson_threats(assets, drone_specs: dict, lambdas: dict):
+def sample_poisson_threats(drone_specs: dict, lambdas: dict):
     threats = []
     
     for drone_type, lam in lambdas.items():
@@ -24,6 +24,6 @@ def sample_poisson_threats(assets, drone_specs: dict, lambdas: dict):
         spec = next(filter(lambda d: d["type"] == drone_type, drone_specs))
         
         for _ in range(count):
-            threats.append(Threat(ThreatE[drone_type], spec["p"], spec["speed"], assets))
+            threats.append(Threat(ThreatE[drone_type], spec["p"], spec["speed"]))
             
     return threats

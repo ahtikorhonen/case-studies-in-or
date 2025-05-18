@@ -34,23 +34,27 @@ class Simulation:
         asset_value_destroyed = 0
         alive_assets = [asset for asset in self.assets if asset.is_alive]
         alive_threats = [threat for threat in self.threats if threat.is_alive]
-        mapping = self.group_by_closest(alive_assets, alive_threats)
-        
-        for asset, threats in mapping.items():
-            for threat in threats:
-                for observer in asset.observers:
-                    observer.spot(threat, self.night_mode)
-                    
-                for effector in asset.effectors:
-                    if effector.effect(threat, self.night_mode):
-                        break
-                    
-                if threat.attack_asset():
-                    asset.is_alive = False
-                    asset_value_destroyed += asset.total_value
+        self.map_to_closest(alive_assets, alive_threats)
             
-                threat.update_position(asset, self.dt)
-        
+        for asset in alive_assets:
+            for threat in alive_threats:
+                
+                for effector in asset.effectors:
+                    if threat is asset.closest_threat:
+                        if effector.effect(threat, self.night_mode):
+                            break
+                
+                for observer in asset.observers:
+                    if observer.spot(threat, self.night_mode):
+                        break
+                
+                if asset is threat.closest_asset:
+                    if threat.attack_asset():
+                        asset.is_alive = False
+                        asset_value_destroyed += asset.total_value
+                    
+                    threat.update_position(self.dt)
+                
         return asset_value_destroyed
 
     def reset_simulation(self):
@@ -75,31 +79,34 @@ class Simulation:
             
             self.reset_simulation()
                         
-        return np.sum(costs) / n, np.std(costs), sum_of_assets_destroyed / n
+        return np.mean(costs), np.std(costs), sum_of_assets_destroyed / n
 
-    def group_by_closest(
+    def map_to_closest(
         self,
         assets: list,
         threats: list
-    ) -> dict:
+    ):
         """
-        For each asset in assets, build a dict containing:
-        - the asset itself as key
-        - all threats for which the asset is the nearest neighbor among all assets.
-        
+        Assigns the closest spotted and alive threat as the closest_threat attribute of the asset and
+        assigns the closest alive asset as the closest_asset attribute of the threat.
         """
-        mapping = defaultdict(list)
-        
         # For each threat, find its nearest asset and assign it:
         for threat in threats:
             closest_asset = min(
                 assets,
                 key=lambda asset: self.euclidean_distance(asset.position, threat.position)
             )
-            mapping[closest_asset].append(threat)
             threat.closest_asset = closest_asset
         
-        return mapping
+        # for each asset, find its nearest spotted threat
+        for asset in assets:
+            spotted_threats = [threat for threat in threats if threat.is_spotted]
+            if spotted_threats:
+                closest_spotted_threat = min(
+                    [threat for threat in threats if threat.is_spotted],
+                    key=lambda threat: self.euclidean_distance(threat.position, asset.position)
+                )
+                asset.closest_threat = closest_spotted_threat
     
     def euclidean_distance(self, p1: tuple[float, float], p2: tuple[float, float]) -> float:
         """

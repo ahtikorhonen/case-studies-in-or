@@ -27,7 +27,7 @@ class Effector:
             p = self.visibility_coeff * (a * x ** 2 + b * x + c)
             
             # this should not be used
-            if p > 1:
+            if p > 0.9:
                 p = 0.9
             elif p < 0:
                 p = 0
@@ -47,6 +47,7 @@ class Effector:
         
         if threat.is_spotted:
             p = self.get_p(threat)
+            #print(f"effector type: {self.type}, sampled p-value: {p}, distance to asset: {threat.distance_to_asset}")
             if bool(np.random.binomial(1, p)):
                 threat.is_alive = False
                 

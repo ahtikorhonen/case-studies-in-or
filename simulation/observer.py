@@ -25,7 +25,7 @@ class Observer:
         else:
             p = self.visibility_coeff * (a * x ** 2 + b * x + c)
             
-            if p > 1:
+            if p > 0.9:
                 p = 0.9
             elif p < 0:
                 p = 0
@@ -37,13 +37,18 @@ class Observer:
         Tries to spot the threat by sampling from the dist attribute, which represents
         the discrete probability distribution of the threat getting spotted as a function of
         distance to the asset.
-        :return (None): returns None, in case the threat is spotted the is_spotted attribute of the threat is
+        :return (bool): returns True, in case the threat is spotted and the is_spotted attribute of the threat is
                         changed to true
         """
         # cant spot during night time
         if is_night_mode and not self.night_mode:
-            return
+            return False
         
         p = self.get_p(threat)
+        #print(f"observer type: {self.type}, sampled p-value: {p}, distance to asset: {threat.distance_to_asset}")
         if bool(np.random.binomial(1, p)):
             threat.is_spotted = True
+            
+            return True
+        
+        return False

@@ -12,6 +12,7 @@ class Asset:
         self.observers = [Observer(visibility_coeff, **observer) for observer in observers]
         self.position = position
         self.is_alive = True
+        self.closest_threat = None
     
     @property
     def total_value(self):
